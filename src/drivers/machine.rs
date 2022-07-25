@@ -27,6 +27,10 @@ pub struct Machine {
     pub stepper: zaxis::MotionControl,
     #[cfg(feature="mono4k")]
     pub z_bottom_sensor: zaxis::BottomSensor,
+    #[cfg(feature="mono")]
+    pub stepper: zaxis::MotionControl,
+    #[cfg(feature="mono")]
+    pub z_bottom_sensor: zaxis::BottomSensor,
 }
 
 use embassy_stm32::{Peripherals, gpio::Input};
@@ -111,6 +115,15 @@ impl Machine {
             p.PE14, p.PE15, p.PD8, p.PD9, p.PD10,
             p.FSMC,
         );
+        #[cfg(feature="mono")]
+        let mut display = Display::new(
+            p.PC6, p.PA10,
+            p.PD4, p.PD5, p.PD7, p.PD11,
+            p.PD14, p.PD15, p.PD0, p.PD1, p.PE7, p.PE8,
+            p.PE9, p.PE10, p.PE11, p.PE12, p.PE13,
+            p.PE14, p.PE15, p.PD8, p.PD9, p.PD10,
+            p.FSMC,
+        );
         display.init();
         display.backlight.set_high();
 
@@ -122,6 +135,10 @@ impl Machine {
             ADS7846::new(p.PD11, p.PB13, p.PB14, p.PB15, p.SPI2, p.DMA1_CH3, p.DMA1_CH4)
         );
         #[cfg(feature="mono4k")]
+        let touch_screen = TouchScreen::new(
+            ADS7846::new(p.PC7, p.PC8, p.PC9, p.PA8, p.PA9, p.EXTI9)
+        );
+        #[cfg(feature="mono")]
         let touch_screen = TouchScreen::new(
             ADS7846::new(p.PC7, p.PC8, p.PC9, p.PA8, p.PA9, p.EXTI9)
         );
@@ -141,12 +158,25 @@ impl Machine {
             p.PA4, p.PA5, p.PA6, p.PA7,
             p.SPI1, p.DMA1_CH2, p.DMA1_CH3,
         );
+        #[cfg(feature="mono")]
+        let lcd = Lcd::new(
+            p.PD12,
+            p.PA4, p.PA5, p.PA6, p.PA7,
+            p.SPI1, p.DMA1_CH2, p.DMA1_CH3,
+        );
 
 
         //--------------------------
         // UV Light
         //--------------------------
         #[cfg(feature="mono4k")]
+        {
+            // This turns on the UV light:
+            // use embassy_stm32::gpio::{Level, Input, Output, Speed, Pull};
+            // core::mem::forget(Output::new(p.PA1, Level::High, Speed::Low)); // PWM
+            // core::mem::forget(Output::new(p.PB7, Level::High, Speed::Low)); // Master switch
+        }
+        #[cfg(feature="mono")]
         {
             // This turns on the UV light:
             // use embassy_stm32::gpio::{Level, Input, Output, Speed, Pull};
@@ -197,6 +227,10 @@ impl Machine {
             stepper,
             #[cfg(feature="mono4k")]
             z_bottom_sensor
-         }
+            #[cfg(feature="mono")]
+            stepper,
+            #[cfg(feature="mono")]
+            z_bottom_sensor
+        }
     }
 }

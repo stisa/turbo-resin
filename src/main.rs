@@ -315,6 +315,13 @@ fn main() -> ! {
         machine.z_bottom_sensor,
     ));
 
+    
+    #[cfg(feature="mono")]
+    Z_AXIS.put(zaxis::MotionControlAsync::new(
+        SharedWithInterrupt::new(machine.stepper),
+        machine.z_bottom_sensor,
+    ));
+
     let (lvgl, display) = lvgl_init(machine.display);
 
     USB_HOST.put(machine.usb_host);

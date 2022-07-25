@@ -58,6 +58,8 @@ saturn = ["stm32f407ze"]
 lv3 = ["stm32f407ze"]
 # Anycubic Mono 4K
 mono4k = ["gd32f307ve"]
+# Anycubic Mono
+mono = ["gd32f307ve"]
 
 default = []
 

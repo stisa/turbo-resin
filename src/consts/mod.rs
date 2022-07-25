@@ -9,3 +9,9 @@ pub use saturn::*;
 mod mono4k;
 #[cfg(feature="mono4k")]
 pub use mono4k::*;
+
+#[cfg(feature="mono")]
+mod mono;
+#[cfg(feature="mono")]
+pub use mono::*;
+

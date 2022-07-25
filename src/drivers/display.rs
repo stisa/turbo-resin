@@ -110,6 +110,30 @@ impl Display {
             });
         }
 
+        #[cfg(feature="mono")]
+        unsafe {
+            fsmc.bcr1().write(|w| {
+                // Enable Bank
+                w.set_mbken(vals::BcrMbken::ENABLED);
+                // data width: 16 bits
+                w.set_mwid(vals::BcrMwid::BITS16);
+                // write: enable
+                w.set_wren(vals::BcrWren::ENABLED);
+            });
+
+            fsmc.btr1().write(|w| {
+                // Access Mode A
+                w.set_accmod(vals::BtrAccmod::A);
+                // Address setup time: not needed.
+                w.set_addset(0);
+                // Data setup and hold time.
+                // (2+1)/120MHz = 25ns. Should be plenty enough.
+                // Typically, 10ns is the minimum.
+                w.set_datast(2);
+                w.set_datlat(2);
+            });
+        }
+
         #[cfg(feature="saturn")]
         unsafe {
             fsmc.bcr4().write(|w| {
@@ -196,7 +220,30 @@ impl Display {
             self.cmd(0xE0, &[15, 42, 40, 8, 14, 8, 84, 169, 67, 10, 15, 0, 0, 0, 0]);
             self.cmd(0xE1, &[0, 21, 23, 7, 17, 6, 43, 86, 60, 5, 16, 15, 63, 63, 15]);
         }
+        #[cfg(feature="mono")]
+        {
+            self.cmd(0xCF, &[0x00, 0xC1, 0x30]);
+            self.cmd(0xED, &[0x64, 0x03, 0x12, 0x81]);
+            self.cmd(0xE8, &[0x85, 0x10, 0x7A]);
+            self.cmd(0xCB, &[0x39, 0x2C, 0x00, 0x34, 0x02]);
+            self.cmd(0xF7, &[0x20]);
+            self.cmd(0xEA, &[0x00,0x00]);
+            self.cmd(0xC0, &[0x1B]);
+            self.cmd(0xC1, &[0x01]);
+            self.cmd(0xC5, &[0x30, 0x30]);
+            self.cmd(0xC7, &[0xB7]);
+            self.cmd(0x3A, &[0x55]);
+            self.cmd(0x36, &[0xA8]);
+            self.cmd(0xB1, &[0x00, 0x12]);
+            self.cmd(0xB6, &[0x0A, 0xA2]);
+            self.cmd(0x44, &[0x02]);
+            self.cmd(0xF2, &[0x00]);
 
+            // Gamma settings
+            self.cmd(0x26, &[0x01]);
+            self.cmd(0xE0, &[15, 42, 40, 8, 14, 8, 84, 169, 67, 10, 15, 0, 0, 0, 0]);
+            self.cmd(0xE1, &[0, 21, 23, 7, 17, 6, 43, 86, 60, 5, 16, 15, 63, 63, 15]);
+        }
         #[cfg(feature="saturn")]
         {
             self.cmd(0xe0, &[0x00, 0x03, 0x0c, 0x09, 0x17, 0x09, 0x3e, 0x89, 0x49, 0x08, 0x0d, 0x0a, 0x13, 0x15, 0x0f]);

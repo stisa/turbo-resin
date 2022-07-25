@@ -1,6 +1,7 @@
 # Pick your printer
 # Don't forget to modify ./vscode/settings.json as well if you are using VSCode.
-PRINTER ?= mono4k
+#PRINTER ?= mono4k
+PRINTER ?= mono
 #PRINTER ?= saturn
 
 # Pick your hardawre probe by specifying the PROBE variable.
@@ -12,11 +13,11 @@ PRINTER ?= mono4k
 # * (stlink, openocd+gdb)
 # * (stlink, probe-run)
 
-PROBE ?= jlink
-#PROBE ?= stlink
+#PROBE ?= jlink
+PROBE ?= stlink
 
-FLASH_WITH ?= jlink+gdb
-#FLASH_WITH ?= openocd+gdb
+#FLASH_WITH ?= jlink+gdb
+FLASH_WITH ?= openocd+gdb
 # To use probe-run, you need to run `cargo install probe-run` first.
 #FLASH_WITH ?= probe-run
 
@@ -46,16 +47,18 @@ endif
 
 # We get the first string in the feature list matching the $(PRINTER)
 # variable. It's a bit gross. I wish there was a better way.
-export MCU := $(shell \
-	grep -A10000 '^\[features\]$$' Cargo.toml | \
-	grep '^$(PRINTER)\b =' | \
-	sed -E 's/.*\["([^"]+)".*/\1/' \
-)
+export MCU := gd32f307ve 
+#$(shell \
+#	grep -A10000 '^\[features\]$$' Cargo.toml | \
+#	grep '^$(PRINTER)\b =' | \
+#	sed -E 's/.*\["([^"]+)".*/\1/' \
+#)
 
-export DEP_LV_CONFIG_PATH := $(PWD)/lv_conf/$(shell \
-	grep LVCONF_PATH src/consts/$(PRINTER).rs | \
-	sed -E 's/.*=.*"(.*)".*/\1/' \
-)
+export DEP_LV_CONFIG_PATH := C:\Users\stisa\OneDrive\Progetti\turbo-resin\lv_conf\320x240
+# $(PWD)/lv_conf/$(shell \
+#	grep LVCONF_PATH src/consts/$(PRINTER).rs | \
+#	sed -E 's/.*=.*"(.*)".*/\1/' \
+#)
 
 ifeq ($(FLASH_WITH),openocd+gdb)
 	GDB += -x gdb/openocd.gdb
