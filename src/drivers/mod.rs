@@ -13,5 +13,7 @@ pub mod usb;
 mod delay;
 pub use delay::*;
 
+pub mod serial;
+
 mod cycle_counter;
 pub use cycle_counter::*;

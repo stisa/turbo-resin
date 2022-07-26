@@ -6,8 +6,9 @@ use embassy_stm32::usart::{Config, Uart};
 use crate::consts::serial::*;
 
 pub struct Serial {
-    pub config: Config,
-    pub uart: Uart<T>
+    pub tx: pins::TX,
+    pub rx: pins::RX,
+    pub uart: usarts::UART
 }
 
 impl Serial {
@@ -17,12 +18,12 @@ impl Serial {
         rx: pins::RX,
         uart: usarts::UART
     ) -> Self {
-        let config = Config::default();
-        let mut usart = Uart::new(uart, tx, rx, NoDma, NoDma, config);
-        unwrap!(usart.blocking_write(b"Setting up uart\r\n"));
-        info!("wrote Setting up uart");
+        // let config = Config::default();
+        // let mut usart = Uart::new(uart, tx, rx, NoDma, NoDma, config);
+        // unwrap!(usart.blocking_write(b"Setting up uart\r\n"));
+        // info!("wrote Setting up uart");
 
-        Self { config, usart }
+        Self { tx, rx, uart}
 
         //let p = embassy_stm32::init(Default::default());
         //let mut usart = Uart::new(p.USART3, p.PD9, p.PD8, NoDma, NoDma, config);

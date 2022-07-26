@@ -8,6 +8,7 @@ use crate::drivers::{
     CycleCounter,
     touch_screen::*,
     usb::UsbHost, delay_ms,
+    serial::Serial
 };
 
 #[cfg(feature="saturn")]
@@ -15,9 +16,9 @@ use crate::drivers::{
     lcd::LcdFpga,
     ext_flash::ExtFlash,
 };
-use embassy_stm32::{Peripherals, gpio::Input, usart::Uart, usart::Instance, usart::Config, dma::NoDma};
+use embassy_stm32::{Peripherals, gpio::Input};
 
-pub struct Machine<'a> {
+pub struct Machine {
     #[cfg(feature="saturn")]
     pub ext_flash: ExtFlash,
     pub display: Display,
@@ -29,10 +30,10 @@ pub struct Machine<'a> {
     #[cfg(any(feature="mono4k",feature="mono"))]
     pub z_bottom_sensor: zaxis::BottomSensor,
     #[cfg(any(feature="mono"))]
-    pub serial: Uart<'a,dyn Instance<Interrupt = Type>>
+    pub serial: Serial
 }
 
-impl Machine <'a> {
+impl Machine {
     pub fn new(cp: cortex_m::Peripherals, p: Peripherals) -> Self {
         //--------------------------
         //  Clock configuration
@@ -213,11 +214,9 @@ impl Machine <'a> {
         #[cfg(any(feature="mono4k",feature="mono"))]
         let stepper = zaxis::MotionControl::new(drv8424, p.TIM7);
 
-        // Serial
+        //Serial
         #[cfg(any(feature="mono"))]
-        let config = Config::default();
-        #[cfg(any(feature="mono"))]
-        let serial = Uart::new(p.USART3, p.PC10, p.PC11, NoDma, NoDma, config);
+        let serial = Serial::new(p.PC10, p.PC11, p.USART3);
 
         Self {
             #[cfg(feature="saturn")]

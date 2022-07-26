@@ -87,18 +87,18 @@ pub mod io {
     pub const FILE_READER_BUFFER_SIZE: usize = 1024;
 }
 
-// pub mod serial {
-//     pub const baud: u32 = 115200;
-//     pub mod usarts {
-//         use super::super::p;
-//         pub type UART = p::USART3;
-//     }
-//     pub mod pins {
-//         use super::super::p;
-//         pub type TX = p::PC10;
-//         pub type RX = p::PC11;
-//     }
-// }
+pub mod serial {
+    pub const BAUD: u32 = 115200;
+    pub mod usarts {
+        use super::super::p;
+        pub type UART = p::USART3;
+    }
+    pub mod pins {
+        use super::super::p;
+        pub type TX = p::PC10;
+        pub type RX = p::PC11;
+    }
+}
 
 pub mod touch_screen {
     // The higher the more sensitive to touches.

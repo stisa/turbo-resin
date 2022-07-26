@@ -45,7 +45,9 @@ use embassy_stm32::{
     interrupt::InterruptExt,
     executor::InterruptExecutor,
     time::U32Ext,
-    usart::Uart,
+    usart::Uart, 
+    usart::Config as SerialConfig, 
+    dma::NoDma
 };
 
 use embedded_sdmmc::Mode;
@@ -247,6 +249,7 @@ mod low_priority_tasks {
 
             lvgl.run_tasks();
             display.set_backlight(true);
+
         }
     }
 }
@@ -322,7 +325,11 @@ fn main() -> ! {
         SharedWithInterrupt::new(machine.stepper),
         machine.z_bottom_sensor,
     ));
-
+    #[cfg(any(feature="mono"))]
+    let serialcfg = SerialConfig::default();
+    #[cfg(any(feature="mono"))]
+    let mut serial = Uart::new(machine.serial.uart, machine.serial.rx, machine.serial.tx, NoDma, NoDma, serialcfg);
+    serial.blocking_write(b"Hello Embassy World!\r\n").unwrap();
     let (lvgl, display) = lvgl_init(machine.display);
 
     USB_HOST.put(machine.usb_host);
