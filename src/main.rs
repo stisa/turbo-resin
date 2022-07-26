@@ -45,6 +45,7 @@ use embassy_stm32::{
     interrupt::InterruptExt,
     executor::InterruptExecutor,
     time::U32Ext,
+    usart::Uart,
 };
 
 use embedded_sdmmc::Mode;

@@ -47,18 +47,16 @@ endif
 
 # We get the first string in the feature list matching the $(PRINTER)
 # variable. It's a bit gross. I wish there was a better way.
-export MCU := gd32f307ve 
-#$(shell \
-#	grep -A10000 '^\[features\]$$' Cargo.toml | \
-#	grep '^$(PRINTER)\b =' | \
-#	sed -E 's/.*\["([^"]+)".*/\1/' \
-#)
+export MCU := $(shell \
+	grep -A10000 '^\[features\]$$' Cargo.toml | \
+	grep '^$(PRINTER)\b =' | \
+	sed -E 's/.*\["([^"]+)".*/\1/' \
+)
 
-export DEP_LV_CONFIG_PATH := C:\Users\stisa\OneDrive\Progetti\turbo-resin\lv_conf\320x240
-# $(PWD)/lv_conf/$(shell \
-#	grep LVCONF_PATH src/consts/$(PRINTER).rs | \
-#	sed -E 's/.*=.*"(.*)".*/\1/' \
-#)
+export DEP_LV_CONFIG_PATH := $(PWD)/lv_conf/$(shell \
+	grep LVCONF_PATH src/consts/$(PRINTER).rs | \
+	sed -E 's/.*=.*"(.*)".*/\1/' \
+)
 
 ifeq ($(FLASH_WITH),openocd+gdb)
 	GDB += -x gdb/openocd.gdb

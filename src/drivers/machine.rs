@@ -15,27 +15,24 @@ use crate::drivers::{
     lcd::LcdFpga,
     ext_flash::ExtFlash,
 };
+use embassy_stm32::{Peripherals, gpio::Input, usart::Uart, usart::Instance, usart::Config, dma::NoDma};
 
-pub struct Machine {
+pub struct Machine<'a> {
     #[cfg(feature="saturn")]
     pub ext_flash: ExtFlash,
     pub display: Display,
     pub touch_screen: TouchScreen,
     pub lcd: Lcd,
     pub usb_host: UsbHost,
-    #[cfg(feature="mono4k")]
+    #[cfg(any(feature="mono4k",feature="mono"))]
     pub stepper: zaxis::MotionControl,
-    #[cfg(feature="mono4k")]
+    #[cfg(any(feature="mono4k",feature="mono"))]
     pub z_bottom_sensor: zaxis::BottomSensor,
-    #[cfg(feature="mono")]
-    pub stepper: zaxis::MotionControl,
-    #[cfg(feature="mono")]
-    pub z_bottom_sensor: zaxis::BottomSensor,
+    #[cfg(any(feature="mono"))]
+    pub serial: Uart<'a,dyn Instance<Interrupt = Type>>
 }
 
-use embassy_stm32::{Peripherals, gpio::Input};
-
-impl Machine {
+impl Machine <'a> {
     pub fn new(cp: cortex_m::Peripherals, p: Peripherals) -> Self {
         //--------------------------
         //  Clock configuration
@@ -201,20 +198,26 @@ impl Machine {
             );
         }
 
-        #[cfg(feature="mono4k")]
+        #[cfg(any(feature="mono4k",feature="mono"))]
         let z_bottom_sensor = zaxis::BottomSensor::new(
             p.PB3,
             // pb4 is normally the top sensor
         );
 
-        #[cfg(feature="mono4k")]
+        #[cfg(any(feature="mono4k",feature="mono"))]
         let drv8424 = zaxis::Drv8424::new(
             p.PE4, p.PE5, p.PE6, p.PC3, p.PC0, p.PC1, p.PC2,
             p.PA3, p.TIM2,
         );
 
-        #[cfg(feature="mono4k")]
+        #[cfg(any(feature="mono4k",feature="mono"))]
         let stepper = zaxis::MotionControl::new(drv8424, p.TIM7);
+
+        // Serial
+        #[cfg(any(feature="mono"))]
+        let config = Config::default();
+        #[cfg(any(feature="mono"))]
+        let serial = Uart::new(p.USART3, p.PC10, p.PC11, NoDma, NoDma, config);
 
         Self {
             #[cfg(feature="saturn")]
@@ -223,14 +226,12 @@ impl Machine {
             touch_screen,
             lcd,
             usb_host,
-            #[cfg(feature="mono4k")]
+            #[cfg(any(feature="mono4k",feature="mono"))]
             stepper,
-            #[cfg(feature="mono4k")]
-            z_bottom_sensor
-            #[cfg(feature="mono")]
-            stepper,
-            #[cfg(feature="mono")]
-            z_bottom_sensor
+            #[cfg(any(feature="mono4k",feature="mono"))]
+            z_bottom_sensor,
+            #[cfg(any(feature="mono"))]
+            serial
         }
     }
 }

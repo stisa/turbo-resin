@@ -38,7 +38,7 @@ pub mod lcd {
 
 pub mod zaxis {
     pub mod hardware {
-        pub const DRIVER_MICROSTEPS: u32 = 256;
+        pub const DRIVER_MICROSTEPS: u32 = 16;
         pub const FULL_STEPS_PER_REVOLUTION: u32 = 200;
         pub const SCREW_THREAD_PITCH_MM: f32 = 2.0;
         pub const MOTOR_CURRENT_PERCENT: u32 = 70;
@@ -86,6 +86,19 @@ pub mod io {
     // This should be at least one block_size = 512 to avoid degrading perfs
     pub const FILE_READER_BUFFER_SIZE: usize = 1024;
 }
+
+// pub mod serial {
+//     pub const baud: u32 = 115200;
+//     pub mod usarts {
+//         use super::super::p;
+//         pub type UART = p::USART3;
+//     }
+//     pub mod pins {
+//         use super::super::p;
+//         pub type TX = p::PC10;
+//         pub type RX = p::PC11;
+//     }
+// }
 
 pub mod touch_screen {
     // The higher the more sensitive to touches.
