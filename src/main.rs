@@ -97,7 +97,7 @@ mod high_priority_tasks {
 }
 
 mod medium_priority_tasks {
-    use crate::drivers::{read_cycles, usb::{UsbError, MscBlockDevice}};
+    use crate::drivers::{read_cycles, usb::{UsbError, MscBlockDevice}, serial::Serial};
 
     use super::*;
 
@@ -214,6 +214,15 @@ mod medium_priority_tasks {
     }
 
     #[embassy::task]
+    pub async fn serial_beat_task(mut serial: Serial) {
+        loop {
+            serial.uart.blocking_write(b"ok\r\n").unwrap();
+            debug!("ok;");
+            Timer::after(Duration::from_millis(10)).await
+        }
+    }
+
+    #[embassy::task]
     pub async fn main_task() {
         let z_axis = unsafe { Z_AXIS.steal() };
         let task_runner = unsafe { TASK_RUNNER.steal() };
@@ -286,7 +295,7 @@ fn iter_port_reg_changes(old_value: u32, new_value: u32, stride: u8, mut f: impl
 fn main() -> ! {
     logging::init_logging();
 
-    let machine = {
+    let mut machine = {
         let p = {
             #[allow(unused_mut)]
             let mut config = Config::default();
@@ -326,10 +335,14 @@ fn main() -> ! {
         machine.z_bottom_sensor,
     ));
     #[cfg(any(feature="mono"))]
-    let serialcfg = SerialConfig::default();
-    #[cfg(any(feature="mono"))]
-    let mut serial = Uart::new(machine.serial.uart, machine.serial.rx, machine.serial.tx, NoDma, NoDma, serialcfg);
-    serial.blocking_write(b"Hello Embassy World!\r\n").unwrap();
+    machine.serial.uart.blocking_write(b"Init serial\r\n").unwrap();
+    //let mut serial = Serial::new(machine.serial.uart, machine.serial.rx, machine.serial.tx, NoDma, NoDma, serialcfg);
+    //let serialcfg = SerialConfig::default();
+    //#[cfg(any(feature="mono"))]
+    //let mut serial = Uart::new(machine.serial.uart, machine.serial.rx, machine.serial.tx, NoDma, NoDma, serialcfg);
+    //serial.blocking_write(b"Hello Embassy World!\r\n").unwrap();
+    //debug!("Serial start");
+    
     let (lvgl, display) = lvgl_init(machine.display);
 
     USB_HOST.put(machine.usb_host);
@@ -368,6 +381,7 @@ fn main() -> ! {
 
         spawner.spawn(medium_priority_tasks::touch_screen_task(touch_screen)).unwrap();
         spawner.spawn(medium_priority_tasks::lvgl_tick_task(lvgl_ticks)).unwrap();
+        spawner.spawn(medium_priority_tasks::serial_beat_task(machine.serial)).unwrap();
         spawner.spawn(medium_priority_tasks::main_task()).unwrap();
         spawner.spawn(medium_priority_tasks::usb_stack()).unwrap();
         //spawner.spawn(medium_priority_tasks::lcd_task(lcd_receiver)).unwrap();
